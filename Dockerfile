@@ -11,3 +11,4 @@ RUN a2enmod rewrite \
 COPY ./src/ /var/www/html/
 
 EXPOSE 80
+CMD ["php", "-S", "0.0.0.0:10000", "-t", "."]
