@@ -1,0 +1,17 @@
+services:
+  php:
+    build: .
+    ports: ["8080:80"]
+    environment:
+      MAIL_FROM: "no-reply@example.test"
+      MAIL_FROM_NAME: "WMS"
+      SMTP_HOST: "mailpit"   # ให้ PHPMailer ยิงเข้า MailPit
+      SMTP_PORT: "1025"
+    volumes: [".:/var/www/html"]
+    depends_on: [mailpit]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"  # เปิด UI http://localhost:8025
+      - "1025:1025"  # SMTP
