@@ -1,14 +1,14 @@
+# ใช้ image PHP
 FROM php:8.2-apache
 
-# Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# คัดลอกไฟล์ทั้งหมดเข้า container
+COPY . /var/www/html
 
-# Enable Apache mod_rewrite for pretty URLs
-RUN a2enmod rewrite \
- && printf "<Directory /var/www/html>\n    AllowOverride All\n    Options Indexes FollowSymLinks\n    Require all granted\n</Directory>\n" >> /etc/apache2/apache2.conf
+# ตั้ง working directory
+WORKDIR /var/www/html
 
-# Copy application source (mounted as volume in compose for dev)
-COPY ./src/ /var/www/html/
+# เปิดพอร์ต 10000 สำหรับ Render
+EXPOSE 10000
 
-EXPOSE 80
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "."]
+# คำสั่งรันเซิร์ฟเวอร์
+CMD ["php", "-S", "0.0.0.0:10000", "-t", "/var/www/html"]
