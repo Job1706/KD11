@@ -24,10 +24,12 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 /* ===== App / DB Config (อ่านจาก ENV ได้) ===== */
 if (!defined('APP_NAME')) define('APP_NAME', getenv('APP_NAME') ?: 'KD management System');
 
-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'db');
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'wms');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'app_user');
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'StrongP@ss!');
+/* 👇 ค่าเริ่มต้นชี้ไปที่ Clever Cloud (แก้เฉพาะรหัสผ่านให้ตรงหรือใส่ผ่าน ENV ก็ได้) */
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'buohwmouhiqtmicybsfj-mysql.services.clever-cloud.com');
+if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: '3306');
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'buohwmouhiqtmicybsfj');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'um1oaedw5ya0imgz');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'PASTE_CC_PASSWORD_HERE'); // <— ใส่รหัสจริงตรงนี้
 
 if (!defined('MAIL_FROM')) define('MAIL_FROM', getenv('MAIL_FROM') ?: 'no-reply@example.com');
 
@@ -36,7 +38,7 @@ function pdo(): PDO {
   static $pdo;
   if ($pdo) return $pdo;
 
-  $dsn = "mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4";
+  $dsn = "mysql:host=".DB_HOST.";port=".DB_PORT.";dbname=".DB_NAME.";charset=utf8mb4";
   $retries = 20;
   while (true) {
     try {
@@ -55,9 +57,10 @@ function pdo(): PDO {
 
 /* ===== DB Bootstrap: สร้าง DB/ตาราง + migrate + seed ===== */
 function db_bootstrap() {
-  // สร้าง DB (ถ้ายังไม่มี)
+  // สร้าง DB (ถ้ายังไม่มี) — บน Clever Cloud ส่วนใหญ่ไม่มีสิทธิ CREATE DATABASE
+  // โค้ดนี้ห่อ try ไว้อยู่แล้ว ถ้าสร้างไม่ได้จะข้ามอัตโนมัติ
   try {
-    $tmp = new PDO("mysql:host=".DB_HOST.";charset=utf8mb4", DB_USER, DB_PASS, [
+    $tmp = new PDO("mysql:host=".DB_HOST.";port=".DB_PORT.";charset=utf8mb4", DB_USER, DB_PASS, [
       PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
     $tmp->exec("CREATE DATABASE IF NOT EXISTS `".DB_NAME."` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -315,7 +318,7 @@ if (!function_exists('send_mail')) {
         return [true, 'OK'];
       } catch (Throwable $e) {
         error_log('MAIL ERROR: ' . $e->getMessage());
-        // จะลอง fallback mail() ด้านล่าง
+        // fallback mail() ต่อด้านล่าง
       }
     }
 
@@ -328,7 +331,7 @@ if (!function_exists('send_mail')) {
   }
 }
 
-/* ====== THEME: Flash block (ข้อความเด่น ไม่ทับ loader) ====== */
+/* ====== THEME: Flash block ====== */
 if (!function_exists('flash_render')) {
   function flash_render(): void {
     if (empty($_SESSION['toast'])) return;
@@ -405,8 +408,8 @@ if (!function_exists('reset_mark_used')) {
   }
 }
 
-/* ====== นโยบายรหัสผ่าน (เวอร์ชันเดียว) ====== */
-if (!function_exists('password_policy_ok')) {
+/* ====== นโยบายรหัสผ่าน ====== */
+if (!function_exists('passwordฟ_policy_ok')) {
   function password_policy_ok(string $pw, &$err=null): bool {
     if (strlen($pw) < 8) { $err='อย่างน้อย 8 อักขระ'; return false; }
     if (!preg_match('/[A-Z]/',$pw)) { $err='ต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1'; return false; }
