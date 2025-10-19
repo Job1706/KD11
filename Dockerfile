@@ -7,8 +7,8 @@ COPY . /var/www/html
 # ตั้ง working directory
 WORKDIR /var/www/html
 
-# เปิดพอร์ต 10000 สำหรับ Render
-EXPOSE 10000
+# เปิดพอร์ต 1000 สำหรับ Render
+EXPOSE 1000
 
 # คำสั่งรันเซิร์ฟเวอร์
 CMD ["php", "-S", "0.0.0.0:10000", "-t", "/var/www/html"]
