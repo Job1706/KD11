@@ -1,17 +1,16 @@
+version: "3.8"
 services:
-  php:
-    build: .
-    ports: ["8080:80"]
-    environment:
-      MAIL_FROM: "no-reply@example.test"
-      MAIL_FROM_NAME: "WMS"
-      SMTP_HOST: "mailpit"   # ให้ PHPMailer ยิงเข้า MailPit
-      SMTP_PORT: "1025"
-    volumes: [".:/var/www/html"]
-    depends_on: [mailpit]
-
-  mailpit:
-    image: axllent/mailpit:latest
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: myadmin
+    restart: unless-stopped
     ports:
-      - "8025:8025"  # เปิด UI http://localhost:8025
-      - "1025:1025"  # SMTP
+      - "8080:80"
+    environment:
+      PMA_HOST: ${MYSQL_HOST}
+      PMA_PORT: ${MYSQL_PORT}
+      PMA_ARBITRARY: "1"
+      UPLOAD_LIMIT: 64M
+    # ถ้าจะล็อกอินอัตโนมัติ (ไม่แนะนำในที่สาธารณะ):
+    #   PMA_USER: ${MYSQL_USER}
+    #   PMA_PASSWORD: ${MYSQL_PASS}
